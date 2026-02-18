@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
   <meta charset="UTF-8">
@@ -120,7 +120,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
-      transition: transform 0.13939s ease-in;
+      transition: transform 0.13939s ease-out;
     }
 
     .popup[data-show] {
@@ -294,10 +294,17 @@
       <span class="line smaller">DevOps performed by Team Best eXcited Security, CUMT</span>
       <span class="line smaller">
         <span class="smaller">
-          Images in this page are derived from Project Sekai: Colorful Stage! feat. Hatsune Miku
+          Resouces in this page are derived from Project Sekai: Colorful Stage! feat. Hatsune Miku
         </span>
       </span>
     </div>
+    <style>
+      .ch-1 {
+        display: inline-block;
+        width: 1ch;
+        text-align: center;
+      }
+    </style>
     <script>
         (() => {
           const datetimeEl = document.getElementById('datetime');
@@ -309,9 +316,29 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            const text = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            const utcOffset = Math.floor(-now.getTimezoneOffset() / 60);
+            const text = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC${utcOffset > 0 ? '+' : ''}${utcOffset === 0 ? '' : utcOffset}`;
             if (text !== datetimeEl.textContent) {
-              datetimeEl.textContent = text;
+              // create a span width=1ch for each character
+              const html = text.split('').map(ch => {
+                if (!/\d/.test(ch)) {
+                  return ch;
+                }
+                const span = document.createElement('span');
+                span.textContent = ch;
+                span.classList.add('ch-1');
+                return span.outerHTML;
+              }).join('').replace(/(^|<\/span>)([^\d]+)(<span|$)/g, '$1<span>$2</span>$3');
+              if (!datetimeEl.textContent.trim()) datetimeEl.innerHTML = html;
+              else {
+                const spanTexts = html.replace(/^<span[^>]*>|<\/span>$/g, '').split(/<\/span><span[^>]*>/);
+                const datetimeSpans = datetimeEl.querySelectorAll('span');
+                for (let i = 0; i < datetimeSpans.length; i++) {
+                  if (spanTexts[i] !== datetimeSpans[i].textContent) {
+                    datetimeSpans[i].textContent = spanTexts[i];
+                  }
+                }
+              }
             }
           }
           updateDateTime();
